@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Weather Forecast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --container-bg: rgba(220, 220, 220, 0.4); 
+            --input-bg: rgba(255, 255, 255, 0.2);
+            --text-white: #FFFFFF;
+            --accent-blue: #00BFFF;
+            --subtle-gray: rgba(255, 255, 255, 0.8);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background-image: url('https://res.cloudinary.com/dyxq6mn93/image/upload/v1756541622/pexels-jplenio-1118873_dknfjf.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;         
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .dark-card {
+            background-color: var(--container-bg);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        #city-input {
+            background: var(--input-bg);
+            color: var(--text-white);
+            border: none;
+        }
+        #city-input::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        #city-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-blue);
+        }
+        .forecast-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        .forecast-container::-webkit-scrollbar-thumb {
+            background-color: var(--accent-blue);
+            border-radius: 20px;
+        }
+        .text-accent {
+            color: var(--accent-blue);
+        }
+        .text-secondary {
+            color: var(--subtle-gray);
+        }
+        svg {
+            color: var(--subtle-gray);
+        }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-6xl mx-auto space-y-6 flex-grow">
+        <header class="text-center">
+            <h1 class="text-5xl font-bold tracking-tight text-accent">Live Weather forecasts</h1>
+            <p class="text-lg text-secondary mt-2">Real-time data and precise forecasts.</p>
+            <div class="relative max-w-md mx-auto mt-6">
+                <input
+                    type="text"
+                    id="city-input"
+                    placeholder="Search for any city worldwide..."
+                    autocomplete="off"
+                    class="w-full py-3 pl-12 pr-4 rounded-full placeholder-white/80 focus:ring-2 focus:ring-accent transition-shadow duration-300"
+                />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/80">
+                    <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+        </header>
+        <div id="message-container" class="text-center">
+             <p id="loading-indicator" class="text-lg hidden">Fetching weather data...</p>
+             <p id="error-message" class="text-lg bg-red-600/50 p-3 rounded-xl hidden"></p>
+        </div>
+        <main id="weather-content" class="grid grid-cols-1 lg:grid-cols-3 gap-6 opacity-0 transition-opacity duration-700">
+            <div class="lg:col-span-2 dark-card p-6 md:p-8">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 id="city-name" class="text-4xl font-bold">--</h2>
+                        <p id="current-date" class="text-secondary">--</p>
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row items-center justify-around my-6">
+                     <div class="flex items-start">
+                        <p id="temperature" class="text-8xl font-bold text-accent">--</p>
+                        <span class="text-3xl font-medium mt-2 text-accent">°C</span>
+                    </div>
+                    <img id="weather-icon" src="https://placehold.co/128x128/1E1E1E/81D4FA?text=Icon" alt="Weather Icon" class="w-24 h-24 md:w-32 md:h-32">
+                    <div>
+                        <p id="description" class="text-2xl font-medium capitalize">--</p>
+                        <p id="high-low-temp" class="text-secondary">H: --° L: --°</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-center">
+                    <div id="visibility" class="dark-card p-4 rounded-xl"></div>
+                    <div id="wind-speed" class="dark-card p-4 rounded-xl"></div>
+                    <div id="humidity" class="dark-card p-4 rounded-xl"></div>
+                    <div id="pressure" class="dark-card p-4 rounded-xl"></div>
+                    <div id="feels-like" class="dark-card p-4 rounded-xl"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <div id="sunrise" class="dark-card p-4 flex items-center justify-between"></div>
+                    <div id="sunset" class="dark-card p-4 flex items-center justify-between"></div>
+                </div>
+            </div>
+            <div class="lg:col-span-1 dark-card p-6 md:p-8">
+                <h3 class="text-2xl font-semibold mb-4 text-accent">5-Day Forecast</h3>
+                <div id="forecast-container" class="space-y-3 forecast-container overflow-y-auto max-h-[400px] pr-2">
+                    </div>
+            </div>
+        </main>
+    <script>
+        const apiKey = '717de8df686c94d8918851a8c49ecb12';
+        const weatherApiUrl = 'https://api.openweathermap.org/data/2.5/weather';
+        const forecastApiUrl = 'https://api.openweathermap.org/data/2.5/forecast';
+        // DOM Elements
+        const cityInput = document.getElementById('city-input');
+        const weatherContent = document.getElementById('weather-content');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const errorMessage = document.getElementById('error-message');
+        // Detail elements
+        const cityNameEl = document.getElementById('city-name');
+        const currentDateEl = document.getElementById('current-date');
+        const temperatureEl = document.getElementById('temperature');
+        const weatherIconEl = document.getElementById('weather-icon');
+        const descriptionEl = document.getElementById('description');
+        const highLowTempEl = document.getElementById('high-low-temp');
+        const visibilityEl = document.getElementById('visibility');
+        const windSpeedEl = document.getElementById('wind-speed');
+        const humidityEl = document.getElementById('humidity');
+        const pressureEl = document.getElementById('pressure');
+        const feelsLikeEl = document.getElementById('feels-like');
+        const sunriseEl = document = document.getElementById('sunrise');
+        const sunsetEl = document.getElementById('sunset');
+        const forecastContainer = document.getElementById('forecast-container');
+        // --- Utility Functions ---
+        const showMessage = (msg, isError = false) => {
+            loadingIndicator.classList.add('hidden');
+            if (isError) {
+                errorMessage.textContent = msg;
+                errorMessage.classList.remove('hidden');
+                weatherContent.classList.add('opacity-0');
+            } else {
+                 loadingIndicator.textContent = msg;
+                 loadingIndicator.classList.remove('hidden');
+            }
+        };
+        const hideMessages = () => {
+            loadingIndicator.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+        };
+        // --- API Fetching ---
+        const getWeatherData = async (city) => {
+            if (!city) return;
+            showMessage('Fetching weather data...'); 
+            const weatherUrl = `${weatherApiUrl}?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
+            const forecastUrl = `${forecastApiUrl}?q=${encodeURIComponent(city)}&appid=${apiKey}&units=metric`;
+            try {
+                const [weatherResponse, forecastResponse] = await Promise.all([
+                    fetch(weatherUrl),
+                    fetch(forecastUrl)
+                ]);
+                if (!weatherResponse.ok) {
+                    const errorData = await weatherResponse.json();
+                    throw new Error(errorData.message || 'City not found.');
+                }
+                 if (!forecastResponse.ok) {
+                    const errorData = await forecastResponse.json();
+                    throw new Error(errorData.message || 'Could not fetch forecast.');
+                }
+                const weatherData = await weatherResponse.json();
+                const forecastData = await forecastResponse.json();
+
+                hideMessages();
+                displayCurrentWeather(weatherData);
+                displayForecast(forecastData);
+                weatherContent.classList.remove('opacity-0');
+            } catch (error) {
+                console.error("API Error:", error);
+                showMessage(error.message, true);
+            }
+        };
+        // --- Data Display Functions ---
+        const displayCurrentWeather = (data) => {
+            cityNameEl.textContent = `${data.name}, ${data.sys.country}`;
+            currentDateEl.textContent = new Date().toLocaleString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+            });
+            temperatureEl.textContent = Math.round(data.main.temp);
+            weatherIconEl.src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`;
+            weatherIconEl.alt = data.weather[0].description;
+            descriptionEl.textContent = data.weather[0].description;
+            highLowTempEl.textContent = `H: ${Math.round(data.main.temp_max)}° L: ${Math.round(data.main.temp_min)}°`;
+            const formatTime = (timestamp) => new Date(timestamp * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            visibilityEl.innerHTML = createDetailCard('Visibility', `${(data.visibility / 1000).toFixed(1)} km`, '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>');
+            windSpeedEl.innerHTML = createDetailCard('Wind Speed', `${data.wind.speed.toFixed(1)} m/s`, '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>');
+            humidityEl.innerHTML = createDetailCard('Humidity', `${data.main.humidity}%`, '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>');
+            pressureEl.innerHTML = createDetailCard('Pressure', `${data.main.pressure} hPa`, '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 12H19c0-3.9-3.1-7-7-7S5 8.1 5 12H2.5" /><path d="M12 2v3" /><path d="m4.9 4.9 2.1 2.1" /><path d="m17 19.1 2.1 2.1" /><path d="M4.9 19.1 7 17" /><path d="M12 12a5 5 0 0 0-5 5h10a5 5 0 0 0-5-5Z" /></svg>');
+            feelsLikeEl.innerHTML = createDetailCard('Feels Like', `${Math.round(data.main.feels_like)}°C`, '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>');
+            sunriseEl.innerHTML = createSunCard('Sunrise', formatTime(data.sys.sunrise), '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/></svg>');
+            sunsetEl.innerHTML = createSunCard('Sunset', formatTime(data.sys.sunset), '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/></svg>');
+        };
+        const displayForecast = (data) => {
+            forecastContainer.innerHTML = '';
+            const dailyForecasts = {};
+            data.list.forEach(item => {
+                const date = item.dt_txt.split(' ')[0];
+                if (!dailyForecasts[date]) {
+                    dailyForecasts[date] = item;
+                }
+            });
+
+            Object.values(dailyForecasts).slice(0, 5).forEach(day => {
+                const date = new Date(day.dt * 1000);
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const dateOfMonth = date.getDate();
+                const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+
+                const forecastItem = document.createElement('div');
+                forecastItem.className = 'dark-card flex items-center justify-between p-3 rounded-xl';
+                forecastItem.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <img src="https://openweathermap.org/img/wn/${day.weather[0].icon}.png" alt="${day.weather[0].description}" class="w-10 h-10">
+                        <div>
+                            <p class="font-semibold">${dayName}, ${monthName} ${dateOfMonth}</p>
+                            <p class="text-sm text-secondary capitalize">${day.weather[0].description}</p>
+                        </div>
+                    </div>
+                    <p class="font-semibold text-lg text-accent">${Math.round(day.main.temp)}°C</p>
+                `;
+                forecastContainer.appendChild(forecastItem);
+            });
+        };
+
+        const createDetailCard = (title, value, iconSvg) => `
+            <p class="text-sm text-secondary mb-2">${title}</p>
+            <div class="flex items-center justify-center gap-2">
+                ${iconSvg}
+                <p class="text-xl font-semibold">${value}</p>
+            </div>
+        `;
+
+         const createSunCard = (title, value, iconSvg) => `
+             <div>
+                 <p class="text-secondary">${title}</p>
+                 <p class="text-2xl font-bold">${value}</p>
+             </div>
+             ${iconSvg}
+         `;
+
+        cityInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                getWeatherData(cityInput.value.trim());
+            }
+        });
+
+        window.onload = () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const { latitude, longitude } = position.coords;
+                        const weatherUrl = `${weatherApiUrl}?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
+                        const forecastUrl = `${forecastApiUrl}?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
+                        
+                        try {
+                             const [weatherResponse, forecastResponse] = await Promise.all([
+                                 fetch(weatherUrl),
+                                 fetch(forecastUrl)
+                             ]);
+                             const weatherData = await weatherResponse.json();
+                             const forecastData = await forecastResponse.json();
+                             
+                             hideMessages();
+                             displayCurrentWeather(weatherData);
+                             displayForecast(forecastData);
+                             weatherContent.classList.remove('opacity-0');
+                        } catch (error) {
+                             getWeatherData('Mumbai');
+                        }
+                    },
+                    (error) => {
+                        console.warn("Geolocation denied. Defaulting to Mumbai.");
+                        getWeatherData('Mumbai');
+                    }
+                );
+            } else {
+                 console.warn("Geolocation not supported. Defaulting to Mumbai.");
+                 getWeatherData('Mumbai');
+            }
+        };
+
+    </script>
+</body>
+</html>
